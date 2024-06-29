@@ -24,6 +24,17 @@ export class ExchangeBybitRepository {
   ): Promise<GlobalResponseType> {
     const client = this.service.getClient(userId);
     console.log({ client });
+
+    if (!client)
+      return globalResponse({
+        retCode: ResponseCode.OK,
+        regMsg: ResponseMessage.OK,
+        result: {
+          balance: [],
+        },
+        retExtInfo: '',
+      });
+
     const balance = await client.getWalletBalance({
       accountType: 'UNIFIED',
       ...(specificCoin && { coin: specificCoin }),
