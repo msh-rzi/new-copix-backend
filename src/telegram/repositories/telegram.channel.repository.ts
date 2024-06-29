@@ -18,29 +18,35 @@ export class TelegramChannelsRepository {
       const session = await this.AuthRepo.getUserSession(userId);
       const client = await this.AuthRepo.initTelegramClient(userId, session);
 
-      const dialogs = await client.getDialogs();
+      const dialogs = await client.getDialogs({});
 
-      // Filter only channels
+      // Filter and map channels concurrently
       const channels = dialogs
-        .map((dialog) => (dialog.isChannel ? dialog : null))
-        .filter(Boolean);
-
-      // Extract relevant information for each channel
-      const extractedChannels = await Promise.all(
-        channels.map(async (channel) => {
-          // Get profile photo of the channel
-          let profilePhotoBuffer = await client.downloadProfilePhoto(
-            channel.entity,
-          );
+        .filter((dialog) => dialog.isChannel)
+        .map(async (dialog) => {
+          let profilePhotoBuffer = null;
+          try {
+            profilePhotoBuffer = await client.downloadProfilePhoto(
+              dialog.entity,
+            );
+          } catch (error) {
+            console.error(
+              `Error downloading profile photo for channel ${dialog.id}:`,
+              error,
+            );
+          }
 
           return {
-            id: channel.id,
-            title: channel.title,
-            username: (channel.entity as any)?.username || '',
-            profilePhoto: Buffer.from(profilePhotoBuffer).toString('base64'),
+            id: dialog.id,
+            title: dialog.title,
+            username: (dialog.entity as any)?.username || '',
+            profilePhoto: profilePhotoBuffer
+              ? Buffer.from(profilePhotoBuffer).toString('base64')
+              : '',
           };
-        }),
-      );
+        });
+
+      const extractedChannels = await Promise.all(channels);
 
       return globalResponse({
         retCode: ResponseCode.OK,
@@ -53,7 +59,7 @@ export class TelegramChannelsRepository {
       return globalResponse({
         retCode: ResponseCode.INTERNAL_SERVER_ERROR,
         regMsg: ResponseMessage.ERROR,
-        result: { error },
+        result: { error: error.message },
         retExtInfo: 'Internal server error',
       });
     }

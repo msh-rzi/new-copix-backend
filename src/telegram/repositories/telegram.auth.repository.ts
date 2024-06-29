@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 // stuff
 import { globalResponse } from 'src/utils/globalResponse';
@@ -20,6 +21,7 @@ export class TelegramAuthRepository {
   constructor(
     private readonly helpers: TelegramHelpers,
     private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
   ) {}
 
   async checkConnection(userId: string) {
@@ -62,15 +64,20 @@ export class TelegramAuthRepository {
       console.log('API credentials retrieved:');
 
       client = new TelegramClient(stringSession, apiId, apiHash, {
-        testServers: true,
-        connectionRetries: 5,
-        retryDelay: 1000,
+        testServers: !!this.configService.get<string>('IS_PRODUCTION'),
+        connectionRetries: 10,
+        retryDelay: 5000,
+        timeout: 5000,
+        autoReconnect: true,
       });
+
       console.log('Telegram client created');
 
       const connected = await client.connect();
       this.clients.set(userId, client);
       console.log('Client connection status:', connected);
+
+      this.scheduleReconnection(userId, client);
 
       console.log('--------------------');
       console.log({ clients: this.clients });
@@ -82,6 +89,51 @@ export class TelegramAuthRepository {
       );
       throw error;
     }
+  }
+
+  private scheduleReconnection(userId: string, client: TelegramClient) {
+    const ONE_HOUR = 3600000; // 1 hour in milliseconds
+
+    setInterval(async () => {
+      try {
+        console.log(
+          `Disconnecting and reconnecting client for user: ${userId}`,
+        );
+
+        // Disconnect the client
+        await client.disconnect();
+        console.log('Client disconnected successfully for user:', userId);
+
+        // Reconnect the client
+        const newClient = await this.reconnectClient(userId);
+        console.log('Client reconnected successfully for user:', userId);
+
+        // Update the client in the map
+        this.clients.set(userId, newClient);
+      } catch (error) {
+        console.error(
+          `Error during scheduled reconnection for user ${userId}:`,
+          error,
+        );
+      }
+    }, ONE_HOUR);
+  }
+
+  private async reconnectClient(userId: string): Promise<TelegramClient> {
+    const session = await this.getUserSession(userId);
+    const stringSession = new StringSession(session);
+    const { apiHash, apiId } = this.helpers.getApiCredentials();
+
+    const client = new TelegramClient(stringSession, apiId, apiHash, {
+      testServers: !!this.configService.get<string>('IS_PRODUCTION'),
+      connectionRetries: 10,
+      retryDelay: 5000,
+      timeout: 5000,
+      autoReconnect: true,
+    });
+
+    await client.connect();
+    return client;
   }
 
   async sendCode(
