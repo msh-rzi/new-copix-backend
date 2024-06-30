@@ -63,7 +63,20 @@ export class TelegramAuthRepository {
       console.log(`Initializing Telegram Client for user: ${userId}`);
       let client = this.clients.get(userId);
 
+      const isStillConnected = client?.connected;
+      console.log({ isStillConnected });
+
       if (client) {
+        if (!isStillConnected) {
+          console.log('Reconnecting to Telegram...');
+          const tryToConnect = await client.connect();
+          console.log('Connected to Telegram status: ' + tryToConnect);
+        } else {
+          console.log('try to disconnect from Telegram');
+          await client.disconnect();
+          console.log('try to reconnect to Telegram');
+          await client.connect();
+        }
         return new Promise((res) => {
           res(client);
         });
@@ -87,12 +100,10 @@ export class TelegramAuthRepository {
       const connected = await client.connect();
       this.clients.set(userId, client);
 
-      // remove client after timeout
-      setTimeout(() => {
-        client.disconnect();
-        this.clients.delete(userId);
-      }, CONNECTION_TIMEOUT);
       console.log('Client connection status:', connected);
+      if (!connected) {
+        console.error('client not connected with userId:', userId);
+      }
 
       this.scheduleReconnection(userId, client);
 
