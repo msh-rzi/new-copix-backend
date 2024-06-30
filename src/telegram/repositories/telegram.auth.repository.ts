@@ -12,17 +12,28 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseCode, ResponseMessage } from 'src/types/globalEnums';
 import { GlobalResponseType } from 'src/types/globalTypes';
 
+const CONNECTION_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
 @Injectable()
 export class TelegramAuthRepository {
   public client: TelegramClient;
   private clients: Map<string, TelegramClient> = new Map();
   public phoneNumber: string;
+  private telegramConfig: any;
 
   constructor(
     private readonly helpers: TelegramHelpers,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.telegramConfig = {
+      testServers: !!this.configService.get<string>('IS_PRODUCTION'),
+      connectionRetries: 10,
+      retryDelay: 5000,
+      timeout: 5000,
+      autoReconnect: true,
+      maxConcurrentDownloads: 1,
+    };
+  }
 
   async checkConnection(userId: string) {
     const userSession = await this.getUserSession(userId);
@@ -43,6 +54,7 @@ export class TelegramAuthRepository {
       });
     }
   }
+
   async initTelegramClient(
     userId: string,
     session?: string,
@@ -63,18 +75,23 @@ export class TelegramAuthRepository {
       const { apiHash, apiId } = this.helpers.getApiCredentials();
       console.log('API credentials retrieved:');
 
-      client = new TelegramClient(stringSession, apiId, apiHash, {
-        testServers: !!this.configService.get<string>('IS_PRODUCTION'),
-        connectionRetries: 10,
-        retryDelay: 5000,
-        timeout: 5000,
-        autoReconnect: true,
-      });
+      client = new TelegramClient(
+        stringSession,
+        apiId,
+        apiHash,
+        this.telegramConfig,
+      );
 
       console.log('Telegram client created');
 
       const connected = await client.connect();
       this.clients.set(userId, client);
+
+      // remove client after timeout
+      setTimeout(() => {
+        client.disconnect();
+        this.clients.delete(userId);
+      }, CONNECTION_TIMEOUT);
       console.log('Client connection status:', connected);
 
       this.scheduleReconnection(userId, client);
@@ -124,13 +141,12 @@ export class TelegramAuthRepository {
     const stringSession = new StringSession(session);
     const { apiHash, apiId } = this.helpers.getApiCredentials();
 
-    const client = new TelegramClient(stringSession, apiId, apiHash, {
-      testServers: !!this.configService.get<string>('IS_PRODUCTION'),
-      connectionRetries: 10,
-      retryDelay: 5000,
-      timeout: 5000,
-      autoReconnect: true,
-    });
+    const client = new TelegramClient(
+      stringSession,
+      apiId,
+      apiHash,
+      this.telegramConfig,
+    );
 
     await client.connect();
     return client;
