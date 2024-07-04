@@ -1,34 +1,26 @@
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { commandGenerator } from '../utils/commandGenerator';
 
 @Injectable()
 export class AiChatGPTRepository {
   OpenAI: OpenAI;
   constructor(private readonly configService: ConfigService) {
+    const apiKey = this.configService.get<string>('CHAT_GPT_API_KEY');
     this.OpenAI = new OpenAI({
-      apiKey: this.configService.get<string>('CHAT_GPT_API_KEY'),
+      apiKey,
     });
   }
 
   async generateCompletion(prompt: string, isOrder?: boolean) {
     try {
-      const content = isOrder
-        ? `fill array of this object :{Symbol: '',Market: '',Position: '',Leverage: '',EntryTargets: [],TakeProfitTargets: [],StopLoss: ''}; with extracted values from this prompt:${prompt};follow this rules for response:1-do not use object keys as find parameter;2-if market is FUTURES return Buy as value else return Sell as value;3-remove all strings from leverage an just return number as string for leverage;4-remove # from symbol;5-add copixStart[i] before start object 1 and for other objects i++ and for end of each object do like start with this text copixEnd[i] and for value between this copixis is json`
-        : prompt;
+      const content = isOrder ? commandGenerator(prompt) : prompt;
 
       console.log('start generating');
       const completion = await this.OpenAI.chat.completions.create({
         messages: [
           { role: 'system', content: 'You are a helpful trading assistant.' },
-          {
-            role: 'user',
-            content: "What is currency name in this message: 'Symbol: #BTC' ",
-          },
-          {
-            role: 'assistant',
-            content: 'This is bitcoin.',
-          },
           {
             role: 'user',
             content,
@@ -37,7 +29,9 @@ export class AiChatGPTRepository {
         model: 'gpt-4-turbo',
       });
       console.log('end generating');
-      return completion.choices[0].message.content;
+      const response = completion.choices[0].message.content;
+      console.log({ response });
+      return response;
     } catch (error) {
       console.error('Error generating completion:', error);
       return null;

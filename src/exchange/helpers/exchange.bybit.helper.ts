@@ -39,7 +39,7 @@ export class ExchangeBybitHelper {
     const switchHedgeMode = await client.switchPositionMode({
       category,
       symbol,
-      mode: 0,
+      mode: 3,
     });
     console.log({ switchHedgeMode });
   }
@@ -67,44 +67,63 @@ export class ExchangeBybitHelper {
   ) {
     const client = this.bybitService.getClient(userId);
     const tickers = await client.getTickers({ category, symbol });
+    console.log({ tickers });
     return tickers.result.list.at(0).lastPrice;
   }
 
   async updatePositionConfig(userId: string, symbol: string, leverage: string) {
     const category = 'linear';
-
-    const targetCoinPositionInfo = await this.getPositionInfo(
-      userId,
-      category,
-      symbol,
+    console.log(
+      `Starting updatePositionConfig with userId: ${userId}, symbol: ${symbol}, leverage: ${leverage}`,
     );
-    if (targetCoinPositionInfo.retCode !== 0) {
-      return {
-        message: 'error getPositionInfo',
-      };
-    }
 
-    // update leverage
-    if (
-      targetCoinPositionInfo.result.list.at(0).leverage !== leverage.toString()
-    ) {
-      const setLeverage = await this.updateLeverage(
+    try {
+      const targetCoinPositionInfo = await this.getPositionInfo(
         userId,
         category,
         symbol,
-        leverage.toString(),
       );
-      console.log({ setLeverage });
-    }
+      console.log(
+        `targetCoinPositionInfo: ${JSON.stringify(targetCoinPositionInfo)}`,
+      );
 
-    // update position mode
-    if (targetCoinPositionInfo.result.list[0].positionIdx === 0) {
+      if (targetCoinPositionInfo.retCode !== 0) {
+        console.error('Error in getPositionInfo:', targetCoinPositionInfo);
+        return {
+          message: 'error getPositionInfo',
+        };
+      }
+
+      // update leverage
+      const currentLeverage = targetCoinPositionInfo.result.list.at(0).leverage;
+      console.log(
+        `Current leverage: ${currentLeverage}, Desired leverage: ${leverage.toString()}`,
+      );
+
+      if (currentLeverage !== leverage.toString()) {
+        const setLeverage = await this.updateLeverage(
+          userId,
+          category,
+          symbol,
+          leverage.toString(),
+        );
+        console.log(`Leverage update response: ${JSON.stringify(setLeverage)}`);
+      }
+
+      // update position mode
       const switchHedgeMode = await this.switchPositionMode(
         userId,
         category,
         symbol,
       );
-      console.log({ switchHedgeMode });
+      console.log(
+        `Position mode switch response: ${JSON.stringify(switchHedgeMode)}`,
+      );
+    } catch (error) {
+      console.error('Error in updatePositionConfig:', error);
+      return {
+        message: 'exception occurred',
+      };
     }
   }
 }

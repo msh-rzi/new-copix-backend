@@ -120,11 +120,12 @@ export class ExchangeBybitRepository {
       : (lastAlgorithmPurchaseVolume * coinLastPrice).toString();
 
     console.log(`calculated result: ${result}`);
-    return Math.round(parseFloat(result)).toString();
+    return result.toString();
   }
 
   async createOrder(userId: string, exchangeId: string, data: TradeDetails) {
-    const { Symbol, Leverage } = data;
+    let { Symbol, Leverage } = data;
+    Symbol = Symbol.replace('.p', '').replace('.P', '');
 
     console.log('Updating position config:', { Symbol, Leverage });
     await this.helper.updatePositionConfig(userId, Symbol, Leverage);
