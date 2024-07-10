@@ -44,11 +44,11 @@ export class ExchangeBybitMapper {
 
     raw.EntryTargets.forEach((et, index) => {
       // Main Order
-      const takeProfitLength = raw.TakeProfitTargets.length;
-      const tp =
-        takeProfitLength - 1 > index
-          ? raw.TakeProfitTargets[index]
-          : raw.TakeProfitTargets[takeProfitLength];
+      // const takeProfitLength = raw.TakeProfitTargets.length;
+      // const tp =
+      //   takeProfitLength - 1 > index
+      //     ? raw.TakeProfitTargets[index]
+      //     : raw.TakeProfitTargets[takeProfitLength];
       const order = new BybitBatchOrderDomain();
       order.symbol = raw.Symbol.replace('.p', '').toUpperCase();
       order.side = side;
@@ -92,7 +92,7 @@ export class ExchangeBybitMapper {
             (+qty * raw.EntryTargets.length + 1) /
             raw.TakeProfitTargets.length
           ).toString();
-          takeProfitOrder.price = et.toString();
+          takeProfitOrder.price = tp.toString();
           takeProfitOrder.timeInForce = 'GTC';
           takeProfitOrder.positionIdx = side === 'Buy' ? 1 : 2;
           takeProfitOrder.tpslMode = 'Partial';
