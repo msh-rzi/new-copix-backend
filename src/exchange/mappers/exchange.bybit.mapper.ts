@@ -77,6 +77,7 @@ export class ExchangeBybitMapper {
         stopLossOrder.stopLoss = raw.StopLoss.toString();
         stopLossOrder.triggerDirection = side === 'Buy' ? 2 : 1;
         stopLossOrder.triggerPrice = raw.StopLoss.toString();
+        stopLossOrder.closeOnTrigger = true;
 
         orders.stopLoss.push(stopLossOrder);
       }
@@ -99,6 +100,7 @@ export class ExchangeBybitMapper {
           takeProfitOrder.takeProfit = tp.toString();
           takeProfitOrder.triggerDirection = side === 'Buy' ? 1 : 2;
           takeProfitOrder.triggerPrice = tp.toString();
+          takeProfitOrder.closeOnTrigger = true;
 
           orders.takeProfit.push(takeProfitOrder);
         });

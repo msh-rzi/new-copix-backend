@@ -17,6 +17,7 @@ export class BybitOrderDomain {
   stopLoss?: string;
   triggerDirection?: 1 | 2;
   triggerPrice?: string;
+  closeOnTrigger?: boolean;
 }
 
 export class BybitBatchOrderDomain extends OmitType(BybitOrderDomain, [
