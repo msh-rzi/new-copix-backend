@@ -8,13 +8,15 @@ export class BybitOrderDomain {
   qty: string;
   price: string;
   timeInForce?: 'GTC';
-  orderLinkId?: string;
-  isLeverage?: BybitOrderIsLeverage;
-  orderFilter?: BybitOrderFilter;
+  // orderLinkId?: string;
+  // isLeverage?: BybitOrderIsLeverage;
+  // orderFilter?: BybitOrderFilter;
   positionIdx: BybitPositionIdx;
   tpslMode?: BybitOrderTpslMode;
   takeProfit?: string;
   stopLoss?: string;
+  triggerDirection?: 1 | 2;
+  triggerPrice?: string;
 }
 
 export class BybitBatchOrderDomain extends OmitType(BybitOrderDomain, [

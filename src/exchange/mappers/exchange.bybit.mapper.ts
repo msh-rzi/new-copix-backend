@@ -3,47 +3,106 @@ import { BybitBatchOrderDomain } from '../domain/bybit.order.domain';
 import { BybitTradingStopDomain } from '../domain/bybit.trading.stop.domain';
 
 export class ExchangeBybitMapper {
-  static toOrderDomain(
-    raw: TradeDetails,
-    qty: string,
-  ): BybitBatchOrderDomain[] {
+  static toOrderDomain(raw: TradeDetails, qty: string) {
     return this.toBatchOrderDomain(raw, qty);
   }
 
-  static toBatchOrderDomain(
-    raw: TradeDetails,
-    qty: string,
-  ): BybitBatchOrderDomain[] {
+  static toOrderDomainNew(raw: TradeDetails, qtyS: string) {
     console.log({ raw });
     const orderList: BybitBatchOrderDomain[] = [];
 
+    const qty = parseInt(qtyS).toFixed(2).toString();
+
     const side = raw.Position.toLowerCase() === 'short' ? 'Sell' : 'Buy';
-    const dividedQty = +qty / raw.EntryTargets.length;
-    // const dividedQty = Math.round(+qty / raw.EntryTargets.length);
+
+    raw.EntryTargets.forEach((entryTarget) => {
+      const order = new BybitBatchOrderDomain();
+      order.symbol = raw.Symbol.replace('.p', '').toUpperCase();
+      order.side = side;
+      order.orderType = 'Limit';
+      order.qty = qty;
+      order.price = entryTarget.toString();
+      order.timeInForce = 'GTC';
+      order.positionIdx = side === 'Buy' ? 1 : 2;
+      order.tpslMode = 'Partial';
+
+      orderList.push(order);
+    });
+
+    return orderList;
+  }
+
+  static toBatchOrderDomain(raw: TradeDetails, qtyS: string) {
+    console.log({ raw });
+    const orders = {
+      orders: [],
+      stopLoss: [],
+      takeProfit: [],
+    };
+    const qty = parseInt(qtyS).toFixed(2).toString();
+    const side = raw.Position.toLowerCase() === 'short' ? 'Sell' : 'Buy';
 
     raw.EntryTargets.forEach((et, index) => {
+      // Main Order
       const takeProfitLength = raw.TakeProfitTargets.length;
       const tp =
         takeProfitLength - 1 > index
           ? raw.TakeProfitTargets[index]
           : raw.TakeProfitTargets[takeProfitLength];
-      const eachTpQty = dividedQty / raw.EntryTargets.length;
       const order = new BybitBatchOrderDomain();
       order.symbol = raw.Symbol.replace('.p', '').toUpperCase();
       order.side = side;
       order.orderType = 'Limit';
-      order.qty = eachTpQty.toString();
+      order.qty = qty;
       order.price = et.toString();
       order.timeInForce = 'GTC';
-      order.orderLinkId = null;
-      order.isLeverage = 1;
-      order.orderFilter = 'Order';
       order.positionIdx = side === 'Buy' ? 1 : 2;
       order.tpslMode = 'Partial';
-      order.takeProfit = tp.toString();
-      order.stopLoss = raw.StopLoss.toString();
+      // order.takeProfit = tp.toString();
+      // order.stopLoss = raw.StopLoss.toString();
 
-      orderList.push(order);
+      orders.orders.push(order);
+
+      // Conditional order : StopLoss
+      if (orders.stopLoss.length === 0) {
+        const stopLossOrder = new BybitBatchOrderDomain();
+        stopLossOrder.symbol = raw.Symbol.replace('.p', '').toUpperCase();
+        stopLossOrder.side = side === 'Buy' ? 'Sell' : 'Buy';
+        stopLossOrder.orderType = 'Limit';
+        stopLossOrder.qty = (+qty * raw.EntryTargets.length + 1).toString();
+        stopLossOrder.price = raw.StopLoss.toString();
+        stopLossOrder.timeInForce = 'GTC';
+        stopLossOrder.positionIdx = side === 'Buy' ? 1 : 2;
+        stopLossOrder.tpslMode = 'Full';
+        stopLossOrder.stopLoss = raw.StopLoss.toString();
+        stopLossOrder.triggerDirection = side === 'Buy' ? 2 : 1;
+        stopLossOrder.triggerPrice = raw.StopLoss.toString();
+
+        orders.stopLoss.push(stopLossOrder);
+      }
+
+      // Conditional order : Take Profit
+      if (orders.takeProfit.length === 0) {
+        raw.TakeProfitTargets.forEach((tp) => {
+          const takeProfitOrder = new BybitBatchOrderDomain();
+          takeProfitOrder.symbol = raw.Symbol.replace('.p', '').toUpperCase();
+          takeProfitOrder.side = side === 'Buy' ? 'Sell' : 'Buy';
+          takeProfitOrder.orderType = 'Limit';
+          takeProfitOrder.qty = (
+            (+qty * raw.EntryTargets.length + 1) /
+            raw.TakeProfitTargets.length
+          ).toString();
+          takeProfitOrder.price = et.toString();
+          takeProfitOrder.timeInForce = 'GTC';
+          takeProfitOrder.positionIdx = side === 'Buy' ? 1 : 2;
+          takeProfitOrder.tpslMode = 'Partial';
+          takeProfitOrder.takeProfit = tp.toString();
+          takeProfitOrder.triggerDirection = side === 'Buy' ? 1 : 2;
+          takeProfitOrder.triggerPrice = tp.toString();
+
+          orders.takeProfit.push(takeProfitOrder);
+        });
+      }
     });
     // raw.EntryTargets.forEach((et) => {
     //   raw.TakeProfitTargets.forEach((tp) => {
@@ -68,7 +127,7 @@ export class ExchangeBybitMapper {
     //   });
     // });
 
-    return orderList;
+    return orders;
   }
 
   static toTradingStopDomain(raw: TradeDetails, qty: string) {

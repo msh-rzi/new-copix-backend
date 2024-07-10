@@ -77,6 +77,7 @@ export class ExchangeBybitRepository {
     symbol: string,
     leverage: string,
   ): Promise<string> {
+    console.clear();
     console.log(`calculateQuantity called with parameters: 
       userId: ${userId}, 
       lastAlgorithm: ${JSON.stringify(lastAlgorithm)}, 
@@ -111,13 +112,16 @@ export class ExchangeBybitRepository {
 
     const effectiveBalance = accountBalance * floatLeverage;
     console.log(`effectiveBalance: ${effectiveBalance}`);
+    const balancer =
+      lastAlgorithmPurchaseVolume > accountBalance
+        ? accountBalance
+        : lastAlgorithmPurchaseVolume;
 
     const result = isPercentage
-      ? (
-          (effectiveBalance * (lastAlgorithmPurchaseVolume / 100)) /
-          coinLastPrice
-        ).toString()
-      : (lastAlgorithmPurchaseVolume * coinLastPrice).toString();
+      ? ((accountBalance * (balancer / 100)) / coinLastPrice)
+          .toFixed(2)
+          .toString()
+      : (balancer / coinLastPrice).toFixed(2).toString();
 
     console.log(`calculated result: ${result}`);
     return result.toString();
@@ -125,7 +129,7 @@ export class ExchangeBybitRepository {
 
   async createOrder(userId: string, exchangeId: string, data: TradeDetails) {
     let { Symbol, Leverage } = data;
-    Symbol = Symbol.replace('.p', '').replace('.P', '');
+    Symbol = Symbol.toLowerCase().replace('.p', '').toUpperCase();
 
     console.log('Updating position config:', { Symbol, Leverage });
     await this.helper.updatePositionConfig(userId, Symbol, Leverage);
@@ -155,19 +159,49 @@ export class ExchangeBybitRepository {
 
     console.log('Mapping to order domain:', { data, qty });
     const orders = ExchangeBybitMapper.toOrderDomain(data, qty);
+    // const orders = ExchangeBybitMapper.toOrderDomain(data, qty);
     console.log('Orders:', orders);
-
-    // console.log('Mapping to trading stop domain:', { data, qty });
-    // const stopTradings = ExchangeBybitMapper.toTradingStopDomain(data, qty);
-    // console.log('Stop tradings:', stopTradings);
 
     const client = this.service.getClient(userId);
 
     console.log('Submitting batch orders:', { orders });
-    const ordersReq = await client.batchSubmitOrders('linear', orders);
-    console.log({ ordersReq });
-    console.log({ ordersReqResult: (ordersReq.result as any).list });
-    console.log({ retExtInfo: ((ordersReq as any).retExtInfo as any).list });
+
+    const res = await client.batchSubmitOrders('linear', [
+      ...orders.orders,
+      ...orders.stopLoss,
+      ...orders.takeProfit,
+    ]);
+
+    console.log({ res });
+    console.log({ res: (res.result as any).list });
+    console.log({ res: res.result });
+    console.log({ res: res.retMsg });
+    console.log({ res: (res as any).retExtInfo.list });
+
+    // orders.orders.forEach((order, index) => {
+    //   const takeOrder = async () => {
+    //     const orderResult = await client.submitOrder({
+    //       category: 'linear',
+    //       ...order,
+    //     });
+
+    //     console.log({ orderResult });
+    //     console.log({ orderResult: orderResult.result });
+    //     console.log({ orderResult: orderResult.retMsg });
+    //   };
+    //   if (index !== 0) {
+    //     setTimeout(() => {
+    //       console.log('add');
+    //       takeOrder();
+    //     }, 5000);
+    //   } else {
+    //     takeOrder();
+    //   }
+    // });
+    // const ordersReq = await client.batchSubmitOrders('linear', orders);
+    // console.log({ ordersReq });
+    // console.log({ ordersReqResult: (ordersReq.result as any).list });
+    // console.log({ retExtInfo: ((ordersReq as any).retExtInfo as any).list });
 
     // if (isBatch) {
     // } else {

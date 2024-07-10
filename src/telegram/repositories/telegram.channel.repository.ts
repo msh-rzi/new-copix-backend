@@ -77,7 +77,7 @@ export class TelegramChannelsRepository {
         new Api.messages.GetHistory({
           // @ts-ignore
           peer: channelId,
-          limit: 10,
+          limit: 30,
         }),
       );
       const history = (ch as any).messages.map(
