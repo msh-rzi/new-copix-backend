@@ -5299,10 +5299,10 @@ tapable@^2.1.1, tapable@^2.2.0, tapable@^2.2.1:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-telegram@^2.21.2:
-  version "2.21.2"
-  resolved "https://registry.yarnpkg.com/telegram/-/telegram-2.21.2.tgz#cf6606c038c89972f227334749ec2cc79c2c44a0"
-  integrity sha512-fvLY49uXsL+TyDdGv7K1JOMMdd0AUkBx+kb5NRC3UYB30Y0h4IQPmTyAAQI6i6/6x6Of6ZK0nXezlSXC9es+EA==
+telegram@^2.22.2:
+  version "2.22.2"
+  resolved "https://registry.yarnpkg.com/telegram/-/telegram-2.22.2.tgz#5e252135fb9b0085fb84b049c0983908b6837473"
+  integrity sha512-9payizc801Aqqu4eTGPc0huxKnIwFe0hn18mrpbgAKKiMLurX/UIQW/fjPhI5ONzockDFsaXDFqTreXBoG1u3A==
   dependencies:
     "@cryptography/aes" "^0.1.1"
     async-mutex "^0.3.0"

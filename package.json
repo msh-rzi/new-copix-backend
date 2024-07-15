@@ -35,7 +35,7 @@
     "openai": "^4.47.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "telegram": "^2.21.2"
+    "telegram": "^2.22.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

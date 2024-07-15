@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { globalResponse } from 'src/utils/globalResponse';
 // telegram
 import { StringSession } from 'telegram/sessions';
-import { Api, TelegramClient } from 'telegram';
+import { TelegramClient } from 'telegram';
 // services
 import { TelegramHelpers } from '../helpers/telegram.helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,7 +12,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseCode, ResponseMessage } from 'src/types/globalEnums';
 import { GlobalResponseType } from 'src/types/globalTypes';
 
-const CONNECTION_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
 @Injectable()
 export class TelegramAuthRepository {
   public client: TelegramClient;
@@ -27,10 +26,10 @@ export class TelegramAuthRepository {
   ) {
     this.telegramConfig = {
       testServers: !!this.configService.get<string>('IS_PRODUCTION'),
-      connectionRetries: 10,
+      connectionRetries: 3,
       retryDelay: 5000,
       timeout: 5000,
-      autoReconnect: true,
+      autoReconnect: false,
       maxConcurrentDownloads: 1,
     };
   }
