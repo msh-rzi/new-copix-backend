@@ -42,7 +42,7 @@ export class ExchangeBybitMapper {
     const qty = parseInt(qtyS).toFixed(2).toString();
     const side = raw.Position.toLowerCase() === 'short' ? 'Sell' : 'Buy';
 
-    raw.EntryTargets.forEach((et, index) => {
+    raw.EntryTargets.forEach((et) => {
       // Main Order
       // const takeProfitLength = raw.TakeProfitTargets.length;
       // const tp =
@@ -132,7 +132,7 @@ export class ExchangeBybitMapper {
     return orders;
   }
 
-  static toTradingStopDomain(raw: TradeDetails, qty: string) {
+  static toTradingStopDomain(raw: TradeDetails) {
     const stopTradingList: BybitTradingStopDomain[] = [];
 
     const side = raw.Position.toLowerCase() === 'short' ? 'Sell' : 'Buy';

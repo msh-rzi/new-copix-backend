@@ -8,7 +8,6 @@ import { globalResponse } from 'src/utils/globalResponse';
 // types
 import { ResponseCode, ResponseMessage } from 'src/types/globalEnums';
 import { TradeDetails } from 'src/telegram/types/types';
-import { BybitOrderDomain } from '../domain/bybit.order.domain';
 import { GlobalResponseType } from 'src/types/globalTypes';
 
 @Injectable()
