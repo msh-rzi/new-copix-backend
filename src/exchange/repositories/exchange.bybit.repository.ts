@@ -40,6 +40,10 @@ export class ExchangeBybitRepository {
       ...(specificCoin && { coin: specificCoin }),
     });
 
+    console.log('account balance: ', balance);
+    console.log(balance.result);
+    console.log(balance.result.list);
+
     return globalResponse({
       retCode: ResponseCode.OK,
       regMsg: ResponseMessage.OK,
@@ -97,8 +101,8 @@ export class ExchangeBybitRepository {
     console.log(`accountBalanceReq: ${JSON.stringify(accountBalanceReq)}`);
 
     const accountBalance = parseFloat(
-      accountBalanceReq.result.balance.at(0).coin.at(0)
-        .availableToWithdraw as string,
+      (accountBalanceReq.result.balance?.at?.(0)?.coin?.at?.(0)
+        .availableToWithdraw as string) || '0',
     );
     console.log(`accountBalance: ${accountBalance}`);
 

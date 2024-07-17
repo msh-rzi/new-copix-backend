@@ -94,6 +94,7 @@ export class TelegramAuthRepository {
         this.telegramConfig,
       );
 
+
       console.log('Telegram client created');
 
       const connected = await client.connect();
