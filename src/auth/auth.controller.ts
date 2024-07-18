@@ -42,6 +42,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Get('logout')
   logout(@Req() req: ReqType) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.authService.logout(req.user.userId);
   }
 

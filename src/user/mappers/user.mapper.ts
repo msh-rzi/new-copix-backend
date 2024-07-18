@@ -35,7 +35,7 @@ export class UserMapper {
   }
 
   static toPersistence(user: User): UserEntity {
-    let role: 'client' | 'admin' | undefined = user?.role ?? 'client';
+    const role: 'client' | 'admin' | undefined = user?.role ?? 'client';
 
     let photo: string | undefined | null = undefined;
 
@@ -45,7 +45,7 @@ export class UserMapper {
       photo = null;
     }
 
-    let status: 'active' | 'inactive' | undefined = user?.status ?? 'active';
+    const status: 'active' | 'inactive' | undefined = user?.status ?? 'active';
 
     const userEntity = new UserEntity();
     if (user.id && typeof user.id === 'number') {

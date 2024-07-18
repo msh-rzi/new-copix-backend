@@ -13,6 +13,9 @@ import { RobotBaseRepository } from 'src/robot/repositories/robot.base.repositor
 
 @Injectable()
 export class TelegramEventRepository {
+  private queue: NewMessageEvent[] = [];
+  private processing = false;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly authRepo: TelegramAuthRepository,
@@ -64,56 +67,65 @@ export class TelegramEventRepository {
       // Start listening for new messages
       const started = await new Promise((resolve) => {
         client.addEventHandler(async (event: NewMessageEvent) => {
-          try {
+          this.queue.push(event);
+          if (!this.processing) {
+            this.processing = true;
             resolve(true);
-            const channelId = event.chatId;
-            // Check if the channel has associated algorithm
-            const relatedChannelWithAlgorithm = userAlgorithms.find(
-              (al) => al.channelId === channelId.toString(),
-            );
+            while (this.queue.length > 0) {
+              const event = this.queue.shift()!;
+              try {
+                const channelId = event.chatId;
+                // Check if the channel has associated algorithm
+                const relatedChannelWithAlgorithm = userAlgorithms.find(
+                  (al) => al.channelId === channelId.toString(),
+                );
 
-            if (!relatedChannelWithAlgorithm) {
-              // console.log(
-              //   'No related channel with algorithm found for channelId:',
-              //   channelId,
-              // );
-              return;
+                if (!relatedChannelWithAlgorithm) {
+                  // console.log(
+                  //   'No related channel with algorithm found for channelId:',
+                  //   channelId,
+                  // );
+                  return;
+                }
+
+                const message = event.message.message;
+                console.log('Received message:', message);
+
+                // Generate completion using ChatGPT
+                const gptResponse = await this.chatgpt.generateCompletion(
+                  message,
+                  true,
+                );
+
+                // Extract trade details from GPT response
+                const tradeRawDataArray =
+                  extractTradeDetailFromGPTResponse(gptResponse);
+
+                console.log(
+                  `Extract trade details from GPT response ${tradeRawDataArray}`,
+                );
+
+                // If no trade data found, return
+                if (!tradeRawDataArray.length) {
+                  console.log('No trade data found in the message.');
+                  return;
+                }
+
+                // Create order for each trade data
+                tradeRawDataArray.forEach((rawData) => {
+                  console.log('Creating order with data:', rawData);
+                  this.bybit.createOrder(
+                    usersId,
+                    userExchanges.exchangeId,
+                    rawData,
+                  );
+                });
+              } catch (error) {
+                console.error('Error handling new message:', error);
+              } finally {
+                this.processing = false;
+              }
             }
-
-            const message = event.message.message;
-            console.log('Received message:', message);
-
-            // Generate completion using ChatGPT
-            const gptResponse = await this.chatgpt.generateCompletion(
-              message,
-              true,
-            );
-
-            // Extract trade details from GPT response
-            const tradeRawDataArray =
-              extractTradeDetailFromGPTResponse(gptResponse);
-
-            console.log(
-              `Extract trade details from GPT response ${tradeRawDataArray}`,
-            );
-
-            // If no trade data found, return
-            if (!tradeRawDataArray.length) {
-              console.log('No trade data found in the message.');
-              return;
-            }
-
-            // Create order for each trade data
-            tradeRawDataArray.forEach((rawData) => {
-              console.log('Creating order with data:', rawData);
-              this.bybit.createOrder(
-                usersId,
-                userExchanges.exchangeId,
-                rawData,
-              );
-            });
-          } catch (error) {
-            console.error('Error handling new message:', error);
           }
         }, new NewMessage({}));
       });

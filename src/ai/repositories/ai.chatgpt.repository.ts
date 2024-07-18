@@ -7,6 +7,7 @@ import { commandGenerator } from '../utils/commandGenerator';
 export class AiChatGPTRepository {
   OpenAI: OpenAI;
   constructor(private readonly configService: ConfigService) {
+    // eslint-disable-next-line no-restricted-syntax
     const apiKey = this.configService.get<string>('CHAT_GPT_API_KEY');
     this.OpenAI = new OpenAI({
       apiKey,

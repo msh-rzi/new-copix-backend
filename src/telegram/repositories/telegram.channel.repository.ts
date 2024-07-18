@@ -67,7 +67,7 @@ export class TelegramChannelsRepository {
 
   async channelHistory(
     userId: string,
-    channelId: BigInt,
+    channelId: bigint,
   ): Promise<GlobalResponseType> {
     try {
       const session = await this.AuthRepo.getUserSession(userId);

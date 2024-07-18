@@ -11,7 +11,7 @@ import {
 export class AuthGuard implements CanActivate {
   constructor(private readonly authHelpers: AuthHelpers) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     try {
       const request = context.switchToHttp().getRequest();
       const { authorization }: any = request.headers;

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
