@@ -5,7 +5,7 @@ FROM node:20.12.0
 WORKDIR /src
 
 # Copy package.json and package-lock.json
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock ./
 
 # Install dependencies
 RUN yarn
@@ -14,10 +14,13 @@ RUN yarn
 COPY . .
 
 # Build the Next.js application
-RUN npm run build
+RUN yarn run build
+
+# create prisma types
+RUN npx prisma generate
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the Next.js application
-CMD ["npm", "start"]
+CMD ["npm", "run", "start:prod"]
