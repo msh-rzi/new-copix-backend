@@ -20,7 +20,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  const port = Boolean(process.env.IS_PRODUCTION) ? 4000 : 3000;
+  console.log(process.env.IS_PRODUCTION === 'false');
+  console.log(
+    'Boolean(process.env.IS_PRODUCTION)',
+    Boolean(process.env.IS_PRODUCTION),
+  );
+
+  const port = process.env.IS_PRODUCTION === 'false' ? 3000 : 4000;
   await app.listen(port);
 }
 bootstrap();
