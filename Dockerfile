@@ -13,11 +13,13 @@ RUN yarn
 # Copy the rest of the application code
 COPY . .
 
-# Build the Next.js application
-RUN yarn run build
 
 # create prisma types
 RUN npx prisma generate
+
+# Build the Next.js application
+RUN yarn run build
+
 
 # Expose the port the app runs on
 EXPOSE 3000

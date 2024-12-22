@@ -1,0 +1,31 @@
+-- CreateTable
+CREATE TABLE "Cryptocurrency" (
+    "id" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "current_price" DOUBLE PRECISION NOT NULL,
+    "market_cap" BIGINT NOT NULL,
+    "market_cap_rank" INTEGER NOT NULL,
+    "fully_diluted_valuation" BIGINT,
+    "total_volume" BIGINT NOT NULL,
+    "high_24h" DOUBLE PRECISION NOT NULL,
+    "low_24h" DOUBLE PRECISION NOT NULL,
+    "price_change_24h" DOUBLE PRECISION NOT NULL,
+    "price_change_percentage_24h" DOUBLE PRECISION NOT NULL,
+    "market_cap_change_24h" BIGINT NOT NULL,
+    "market_cap_change_percentage_24h" DOUBLE PRECISION NOT NULL,
+    "circulating_supply" DOUBLE PRECISION NOT NULL,
+    "total_supply" DOUBLE PRECISION,
+    "max_supply" DOUBLE PRECISION,
+    "ath" DOUBLE PRECISION NOT NULL,
+    "ath_change_percentage" DOUBLE PRECISION NOT NULL,
+    "ath_date" TIMESTAMP(3) NOT NULL,
+    "atl" DOUBLE PRECISION NOT NULL,
+    "atl_change_percentage" DOUBLE PRECISION NOT NULL,
+    "atl_date" TIMESTAMP(3) NOT NULL,
+    "roi" JSONB,
+    "last_updated" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Cryptocurrency_pkey" PRIMARY KEY ("id")
+);

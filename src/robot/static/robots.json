@@ -1,0 +1,16 @@
+[
+    {
+        "id": "1",
+        "name": "Telegram Trade Automaton",
+        "description": "Automates trading activities via Telegram.",
+        "path": "/robot/telegram-trade-automaton",
+        "active": true
+    },
+    {
+        "id": "2",
+        "name": "Trade Pulse",
+        "description": "Monitors and analyzes trade signals in real-time.",
+        "path": "/robot/telegram-trade-automaton",
+        "active": true
+    }
+]

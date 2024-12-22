@@ -25,7 +25,7 @@ export class RobotController {
   @Post('add-robot')
   @HttpCode(HttpStatus.OK)
   async addRobot(
-    @Body() dto: { name: string; description: string; path: string },
+    @Body() dto: { name?: string; description?: string; path?: string },
   ) {
     return await this.service.addRobot(dto.name, dto.description, dto.path);
   }

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 // services
+import { AiChatGPTRepository } from 'src/ai/repositories/ai.chatgpt.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TelegramAuthRepository } from './telegram.auth.repository';
-import { AiChatGPTRepository } from 'src/ai/repositories/ai.chatgpt.repository';
 // telegram
+import { AlgorithmService } from 'src/algorithm/algorithm.service';
+import { ExchangeBybitRepository } from 'src/exchange/repositories/exchange.bybit.repository';
+import { RobotTelegramTradeAutomationRepository } from 'src/robot/repositories/robot.telegram.trade.automation.repository';
 import { NewMessage, NewMessageEvent } from 'telegram/events';
 import { extractTradeDetailFromGPTResponse } from '../utils/extractTradeDetail';
-import { ExchangeBybitRepository } from 'src/exchange/repositories/exchange.bybit.repository';
-import { AlgorithmService } from 'src/algorithm/algorithm.service';
-import { RobotTelegramTradeAutomationRepository } from 'src/robot/repositories/robot.telegram.trade.automation.repository';
-import { RobotBaseRepository } from 'src/robot/repositories/robot.base.repository';
+// import { RobotBaseRepository } from 'src/robot/repositories/robot.base.repository';
 
 @Injectable()
 export class TelegramEventRepository {
@@ -23,13 +23,14 @@ export class TelegramEventRepository {
     private readonly bybit: ExchangeBybitRepository,
     private readonly algorithmService: AlgorithmService,
     private readonly telegramTradeAutomation: RobotTelegramTradeAutomationRepository,
-    private readonly robotService: RobotBaseRepository,
+    // private readonly robotService: RobotBaseRepository,
   ) {
-    this.robotService.getAllUsersRobots().then(async (usersRobots) => {
-      usersRobots.forEach((userRobot) => {
-        if (userRobot.active) this.startListening(userRobot.usersId);
-      });
-    });
+    // ** Remove this comment **
+    // this.robotService.getAllUsersRobots().then(async (usersRobots) => {
+    //   usersRobots.forEach((userRobot) => {
+    //     if (userRobot.active) this.startListening(userRobot.usersId);
+    //   });
+    // });
   }
 
   async startListening(usersId: string) {

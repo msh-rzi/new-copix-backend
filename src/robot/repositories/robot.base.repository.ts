@@ -4,17 +4,37 @@ import { ResponseCode, ResponseMessage } from 'src/types/globalEnums';
 import { GlobalResponseType } from 'src/types/globalTypes';
 import { globalResponse } from 'src/utils/globalResponse';
 import { UserRobots, Robots } from '@prisma/client';
+import * as fs from 'fs';
 
 @Injectable()
 export class RobotBaseRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async addRobot(
-    name: string,
-    description: string,
-    path: string,
+    name?: string,
+    description?: string,
+    path?: string,
   ): Promise<GlobalResponseType<{ error?: any }>> {
     try {
+      if (!name && !description && !path) {
+        const fileContent = fs.readFileSync(
+          './src/robot/static/robots.json',
+          'utf-8',
+        );
+
+        const jsonData = await JSON.parse(fileContent);
+
+        await this.prisma.robots.createMany({
+          data: jsonData,
+        });
+        return globalResponse({
+          retCode: ResponseCode.OK,
+          regMsg: ResponseMessage.OK,
+          result: {},
+          retExtInfo: '',
+        });
+      }
+
       await this.prisma.robots.create({
         data: { name, description, path },
       });
