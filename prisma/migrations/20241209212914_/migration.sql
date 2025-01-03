@@ -1,0 +1,22 @@
+-- AlterTable
+ALTER TABLE "Cryptocurrency" ALTER COLUMN "current_price" SET DATA TYPE TEXT,
+ALTER COLUMN "market_cap" SET DATA TYPE TEXT,
+ALTER COLUMN "market_cap_rank" SET DATA TYPE TEXT,
+ALTER COLUMN "fully_diluted_valuation" SET DATA TYPE TEXT,
+ALTER COLUMN "total_volume" SET DATA TYPE TEXT,
+ALTER COLUMN "high_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "low_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "price_change_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "price_change_percentage_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "market_cap_change_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "market_cap_change_percentage_24h" SET DATA TYPE TEXT,
+ALTER COLUMN "circulating_supply" SET DATA TYPE TEXT,
+ALTER COLUMN "total_supply" SET DATA TYPE TEXT,
+ALTER COLUMN "max_supply" SET DATA TYPE TEXT,
+ALTER COLUMN "ath" SET DATA TYPE TEXT,
+ALTER COLUMN "ath_change_percentage" SET DATA TYPE TEXT,
+ALTER COLUMN "atl" SET DATA TYPE TEXT,
+ALTER COLUMN "atl_change_percentage" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "UserTelegram" ALTER COLUMN "telegramId" SET DATA TYPE TEXT;
