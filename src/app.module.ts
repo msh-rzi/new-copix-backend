@@ -11,8 +11,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { RobotModule } from './robot/robot.module';
 import { CryptocurrencyModule } from './cryptocurrency/cryptocurrency.module';
 import { HttpModule } from '@nestjs/axios';
-import { MarketSentimentModule } from './market-sentiment/market-sentiment.module';
-import { MarketDataModule } from './market-data/market-data.module';
 
 @Module({
   imports: [
@@ -33,8 +31,6 @@ import { MarketDataModule } from './market-data/market-data.module';
     AlgorithmModule,
     RobotModule,
     CryptocurrencyModule,
-    MarketSentimentModule,
-    MarketDataModule,
   ],
 })
 export class AppModule {}
